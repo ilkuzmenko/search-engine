@@ -1,6 +1,7 @@
 import json
-import os
 import pickle
+
+from pathlib import Path
 
 
 def bytes_to(bytes_value, to_size, bsize=1024) -> float:
@@ -9,24 +10,25 @@ def bytes_to(bytes_value, to_size, bsize=1024) -> float:
     return bytes_value / (bsize ** a[to_size])
 
 
-def json_save_dump(collection, file_name=None) -> None:
-    if file_name:
-        with open(f'out/{file_name}.json', 'w', encoding='utf-8') as file:
-            json.dump(collection, file)
-        print(f"JSON saved. Size = {bytes_to(os.stat(f'out/{file_name}.json').st_size, 'm')}MB")
+def save_dump(collection, file_name: str) -> None:
 
+    PROJECT_DIR = Path(__file__).parent.parent.absolute()
+    Path(PROJECT_DIR / 'out').mkdir(parents=True, exist_ok=True)
 
-def txt_save_dump(collection, file_name=None) -> None:
-    if file_name:
-        with open(f'out/{file_name}.txt', 'w', encoding='utf-8') as file:
-            file.write(str(collection))
-        print(f"TEXT saved. Size = {bytes_to(os.stat(f'out/{file_name}.txt').st_size, 'm')}MB")
+    file_path = f'{PROJECT_DIR}/out/{file_name}'
+    file_type = file_path.split('.')[-1]
 
-
-def pickle_save_dump(collection, file_name=None) -> None:
-    if file_name:
-        with open(f'out/{file_name}.pickle', 'wb') as file:
-            pickle.dump(collection, file, protocol=pickle.HIGHEST_PROTOCOL)
-        print(f"PICKLE saved. Size = {bytes_to(os.stat(f'out/{file_name}.pickle').st_size, 'm')}MB")
-    # with open('filename.pickle', 'rb') as handle:
-    #     b = pickle.load(handle)
+    match file_type:
+        case "json":
+            with open(file_path, 'w', encoding='utf-8') as file:
+                json.dump(collection, file)
+        case "txt":
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(str(collection))
+        case "pickle":
+            with open(file_path, 'wb') as file:
+                pickle.dump(collection, file, protocol=pickle.HIGHEST_PROTOCOL)
+        case _:
+            print(f"File '{file_name}' type error.")
+            return
+    print(f"{file_name} {bytes_to(Path(file_path).stat().st_size, 'm')}mb")
