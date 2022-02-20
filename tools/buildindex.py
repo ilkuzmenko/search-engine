@@ -23,7 +23,7 @@ class BuildIndex:
         self.term_trigram_index: Generator[tuple, None, None] = self._terms_trigram_index()
 
     def _process_files(self) -> dict:
-        """ :return: = {filename: [term1, term2]} """
+        """ :return: = {filename: [term1, term2, ...], ...} """
         stemmer = stem.SnowballStemmer('english')
         stopwords = open('tools/stopwords.txt').read()
         file_to_terms = {}
@@ -38,17 +38,17 @@ class BuildIndex:
         return file_to_terms
 
     def _distinct_sorted_terms(self) -> list:
-        """ :return: = ['aterm', 'bterm', 'cterm'] """
+        """ :return: = ['aterm', 'bterm', 'cterm', ...] """
         return sorted(set([_ for __ in self.file_terms.values() for _ in __]))
 
     def _term_file_incidence_matrix(self) -> Generator[tuple, list, None]:
-        """ :return: ('term', [0, 0, 1, 0, 0, 1, 0, 0, 1, 0]) """
+        """ :return: Generator - ('term', [0, 0, 1, 0, 0, 1, 0, 0, 1, 0]) """
         for term in self.vocabulary:
             yield term, [1 if term in self.file_terms[_] else 0 for _ in self.file_terms]
 
     def index_one_file(self, term_list: dict) -> dict:
         """ :param: = [term1, term2, ...]
-            :return: = {term1: [pos1, pos2], term2: [pos2, pos8], ...} """
+            :return: = {term1: [pos1, pos2], term2: [pos2, pos8, ...], ...} """
         file_index = {}
         for index, term in enumerate(term_list):
             if term in file_index.keys():
@@ -86,13 +86,13 @@ class BuildIndex:
         return inverted_index
 
     def _permutation_index(self) -> Generator[tuple, list, None]:
-        """ :return: permutation index for terms """
+        """ :return: Generator - ('hero', ['hero$', 'ero$h', 'ro$he', 'o$her', '$hero']) """
         for term in list(self.vocabulary):
             jok_term = term + '$'
             yield term, [jok_term[_:] + jok_term[:_] for _ in range(len(jok_term))]
 
     def _terms_trigram_index(self) -> Generator[tuple, list, None]:
-        """ :return: trigrams for terms """
+        """ :return: Generator - ('hero', [('h', 'e', 'r'), ('e', 'r', 'o')]) """
         for term in self.vocabulary:
             yield term, list(ngrams(term, 3))
 
