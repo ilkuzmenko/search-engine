@@ -31,4 +31,5 @@ def save_dump(collection, file_name: str) -> None:
         case _:
             print(f"File '{file_name}' type error.")
             return
+        
     print(f"{file_name} {bytes_to(Path(file_path).stat().st_size, 'm')}mb")
